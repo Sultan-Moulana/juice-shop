@@ -15,8 +15,13 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('sonarqube') { 
-                    // Added the maxspace flag at the end so it won't crash
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=juice-shop -Dsonar.sources=. -Dsonar.javascript.node.maxspace=4096"
+                    sh """
+                    ${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=juice-shop \
+                    -Dsonar.sources=. \
+                    -Dsonar.javascript.node.maxspace=2048 \
+                    -Dsonar.exclusions=**/node_modules/**,**/test/**,**/*.spec.ts,**/*.spec.js,**/frontend/node_modules/**
+                    """
                 }
             }
         }
