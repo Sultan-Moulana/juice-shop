@@ -60,10 +60,17 @@ pipeline {
             steps {
                 echo "Running Dynamic Analysis against the live container..."
                 sh '''
+                # Fetch the internal Docker IP of the Juice Shop container
+                APP_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' juice-shop-app)
+                echo "Target IP discovered as: $APP_IP"
+                
+                # Open permissions on the current Jenkins workspace so the ZAP container can save the report
+                chmod 777 .
+                
+                # Run ZAP against the discovered IP instead of localhost
                 docker run --rm -v $(pwd):/zap/wrk/:rw \
-                --network="host" \
                 owasp/zap2docker-stable zap-baseline.py \
-                -t http://localhost:3000 \
+                -t http://$APP_IP:3000 \
                 -r zap_report.html || true 
                 '''
             }
