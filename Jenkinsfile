@@ -10,6 +10,9 @@ pipeline {
             environment {
                 scannerHome = tool 'sonar-scanner' 
             }
+            tools {
+                nodejs 'node'
+            }
             steps {
                 withSonarQubeEnv('sonarqube') { 
                     sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=juice-shop -Dsonar.sources=."
