@@ -25,6 +25,17 @@ pipeline {
                 }
             }
         }
+
+        stage('SAST: Quality Gate Check') {
+            steps {
+                echo "Waiting for SonarQube Quality Gate results..."
+                timeout(time: 5, unit: 'MINUTES') {
+                    // This command pauses the pipeline until the webhook is received.
+                    // If the Quality Gate fails, 'abortPipeline: true' instantly kills the build.
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
         
         stage('Build Target Image') {
             steps {
@@ -39,7 +50,8 @@ pipeline {
                 sh '''
                 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                 aquasec/trivy image \
-                --severity HIGH,CRITICAL \
+                --severity CRITICAL \
+                --exit-code 1 \
                 --format table \
                 ${IMAGE_NAME}:latest
                 '''
