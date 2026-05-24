@@ -65,18 +65,17 @@ pipeline {
                 
                 docker rm -f zap-scanner || true
                 
-                # Added '-v /zap/wrk' to create an anonymous dummy volume.
+                # Telling ZAP to save the report to its own home folder.
                 docker run --name zap-scanner \
-                -v /zap/wrk \
                 zaproxy/zap-stable zap-baseline.py \
                 -t http://$APP_IP:3000 \
-                -r zap_report.html || true 
+                -r /home/zap/zap_report.html || true 
                 
-                # Copy the file out of the container
-                docker cp zap-scanner:/zap/wrk/zap_report.html ./zap_report.html || echo "ZAP report not found"
+                # Copying the file from the ZAP user's home folder directly to the Jenkins workspace.
+                docker cp zap-scanner:/home/zap/zap_report.html ./zap_report.html || echo "ZAP report not found"
                 
-                # Delete the container AND the dummy volume (-v) so we don't leak disk space
-                docker rm -f -v zap-scanner || true
+                # Cleaning up the container.
+                docker rm -f zap-scanner || true
                 '''
             }
         }
