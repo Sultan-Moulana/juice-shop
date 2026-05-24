@@ -65,14 +65,18 @@ pipeline {
                 
                 docker rm -f zap-scanner || true
                 
+                # Added '-v /zap/wrk' to create an anonymous dummy volume.
                 docker run --name zap-scanner \
+                -v /zap/wrk \
                 zaproxy/zap-stable zap-baseline.py \
                 -t http://$APP_IP:3000 \
                 -r zap_report.html || true 
                 
+                # Copy the file out of the container
                 docker cp zap-scanner:/zap/wrk/zap_report.html ./zap_report.html || echo "ZAP report not found"
                 
-                docker rm -f zap-scanner || true
+                # Delete the container AND the dummy volume (-v) so we don't leak disk space
+                docker rm -f -v zap-scanner || true
                 '''
             }
         }
