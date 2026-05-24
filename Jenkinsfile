@@ -64,18 +64,19 @@ pipeline {
                 echo "Target IP discovered as: $APP_IP"
                 
                 docker rm -f zap-scanner || true
-                
-                # Telling ZAP to save the report to its own home folder.
+               
                 docker run --name zap-scanner \
+                --user root \
+                -v /zap/wrk \
                 zaproxy/zap-stable zap-baseline.py \
                 -t http://$APP_IP:3000 \
-                -r /home/zap/zap_report.html || true 
+                -r zap_report.html || true 
                 
-                # Copying the file from the ZAP user's home folder directly to the Jenkins workspace.
-                docker cp zap-scanner:/home/zap/zap_report.html ./zap_report.html || echo "ZAP report not found"
+                # Copy the file out of the container
+                docker cp zap-scanner:/zap/wrk/zap_report.html ./zap_report.html || echo "ZAP report not found"
                 
-                # Cleaning up the container.
-                docker rm -f zap-scanner || true
+                # Clean up container and the dummy volume
+                docker rm -f -v zap-scanner || true
                 '''
             }
         }
